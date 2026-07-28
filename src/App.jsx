@@ -20,10 +20,14 @@ import Semestre4 from './pages/GrupoConsultado/Semestre4'
 import Semestre5 from './pages/GrupoConsultado/Semestre5'
 import Semestre6 from './pages/GrupoConsultado/Semestre6'
 import SubirCalificacionesAlumno from './pages/SubirCalificaciones/SubirCalificacionesAlumno'
+import MiGrupo from './pages/MiGrupo/MiGrupo'
+import CalificarBachillerato from './pages/Calificar/CalificarBachillerato'
+import CalificarUniversidad from './pages/Calificar/CalificarUniversidad'
+import TomarAsistencia from './pages/Asistencia/TomarAsistencia'
 
 
 function App() {
-  
+
 
   return (
     <Router>
@@ -33,7 +37,13 @@ function App() {
         <Route path='/SubirCalificaciones' Component={SubirCalificaciones}/>
         <Route path='/ConsultarGrupos' Component={ConsultarGrupos}/>
 
-        SUBIR CALIFICACIONES
+        {/* COMPLEMENTO: MIS GRUPOS ASIGNADOS (visible desde el Dashboard) */}
+        <Route path='/MiGrupo/:id_grupo' Component={MiGrupo}/>
+        <Route path='/Calificar/Bachillerato/:id_grupo' Component={CalificarBachillerato}/>
+        <Route path='/Calificar/Universidad/:id_grupo' Component={CalificarUniversidad}/>
+        <Route path='/Asistencia/:id_grupo' Component={TomarAsistencia}/>
+
+        {/* SUBIR CALIFICACIONES */}
         <Route path='/GrupoSemestre1' Component={Semestre1M}/>
         <Route path='/GrupoSemestre2' Component={Semestre2M}/>
         <Route path='/GrupoSemestre3' Component={Semestre3M}/>
