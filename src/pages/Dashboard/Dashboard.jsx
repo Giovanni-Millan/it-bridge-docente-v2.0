@@ -14,6 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import Swal from "sweetalert2";
+import Avatar from "../../components/Avatar.jsx";
 
 export default function Dashboard() {
   const [profesor, setProfesor] = useState(null);
@@ -43,7 +44,7 @@ export default function Dashboard() {
 
     const { data: perfil, error: perfilError } = await supabase
       .from("profesores")
-      .select("nombre, apellido_paterno, apellido_materno")
+      .select("nombre, apellido_paterno, apellido_materno, foto_url")
       .eq("id", userId)
       .single();
 
@@ -143,11 +144,20 @@ export default function Dashboard() {
             </h2>
           </div>
           <div className="p-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-gray-800 text-2xl font-bold">{nombreCompleto || "Profesor(a)"}</p>
-              <p className="text-gray-500 mt-1 flex items-center gap-1">
-                <span className="text-sm">📧</span> {correo}
-              </p>
+            <div className="flex items-center gap-4">
+              <Avatar
+                fotoUrl={profesor?.foto_url}
+                nombre={profesor?.nombre}
+                apellidoPaterno={profesor?.apellido_paterno}
+                apellidoMaterno={profesor?.apellido_materno}
+                size={56}
+              />
+              <div>
+                <p className="text-gray-800 text-2xl font-bold">{nombreCompleto || "Profesor(a)"}</p>
+                <p className="text-gray-500 mt-1 flex items-center gap-1">
+                  <span className="text-sm">📧</span> {correo}
+                </p>
+              </div>
             </div>
             <button
               onClick={handleLogOut}

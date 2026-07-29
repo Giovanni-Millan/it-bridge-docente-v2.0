@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import Avatar from "../../components/Avatar.jsx";
 
 const ETIQUETAS_ESTADO = { presente: "Presente", falta: "Falta", retardo: "Retardo", justificado: "Justificado" };
 
@@ -75,7 +76,7 @@ export default function TomarAsistencia() {
       supabase.from("vista_grupos_resumen").select("*").eq("id_grupo", id_grupo).single(),
       supabase
         .from("grupo_alumnos")
-        .select("alumnos(id, nombre, apellido_paterno, apellido_materno)")
+        .select("alumnos(id, nombre, apellido_paterno, apellido_materno, foto_url)")
         .eq("id_grupo", id_grupo),
     ]);
 
@@ -286,7 +287,16 @@ export default function TomarAsistencia() {
                 alumnos.map((alumno) => (
                   <tr key={alumno.id} className="hover:bg-purple-50 transition">
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          fotoUrl={alumno.foto_url}
+                          nombre={alumno.nombre}
+                          apellidoPaterno={alumno.apellido_paterno}
+                          apellidoMaterno={alumno.apellido_materno}
+                          size={32}
+                        />
+                        {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2 flex-wrap">
