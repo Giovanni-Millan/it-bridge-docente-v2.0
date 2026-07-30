@@ -65,7 +65,7 @@ export default function MiGrupo() {
   const fetchAlumnos = async () => {
     const { data, error } = await supabase
       .from("grupo_alumnos")
-      .select("alumnos(id, nombre, apellido_paterno, apellido_materno, correo, telefono, cuatrimestre)")
+      .select("alumnos(id, nombre, apellido_paterno, apellido_materno, correo, telefono, cuatrimestre, plan_meses)")
       .eq("id_grupo", id_grupo);
 
     if (!error) {
@@ -108,10 +108,30 @@ export default function MiGrupo() {
 
         {grupo && (
           <div className="bg-white rounded-2xl shadow-md p-6 mb-8 border border-gray-100">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{grupo.nombre}</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{grupo.nombre}</h1>
+              <span
+                className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  grupo.tipo === "bachillerato"
+                    ? "bg-red-100 text-red-700"
+                    : grupo.tipo === "autoplaneado"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-blue-100 text-blue-700"
+                }`}
+              >
+                {grupo.tipo === "bachillerato"
+                  ? "Bachillerato"
+                  : grupo.tipo === "autoplaneado"
+                  ? "Autoplaneado"
+                  : "Universidad"}
+              </span>
+            </div>
             <p className="text-purple-700 font-medium mt-1">{grupo.carrera_nombre || "Sin carrera asignada"}</p>
-            {grupo.cuatrimestre && (
+            {grupo.tipo === "universidad" && grupo.cuatrimestre && (
               <p className="text-sm text-gray-500 mt-1">Cuatrimestre {grupo.cuatrimestre}</p>
+            )}
+            {grupo.tipo === "bachillerato" && grupo.semestre && (
+              <p className="text-sm text-gray-500 mt-1">Semestre {grupo.semestre}</p>
             )}
           </div>
         )}
@@ -144,7 +164,9 @@ export default function MiGrupo() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Nombre</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Correo</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Teléfono</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Cuatrimestre</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  {grupo?.tipo === "bachillerato" ? "Semestre" : grupo?.tipo === "autoplaneado" ? "Plan" : "Cuatrimestre"}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -164,7 +186,11 @@ export default function MiGrupo() {
                     <td className="px-4 py-3 text-sm text-gray-900">{alumno.telefono || "-"}</td>
                     <td className="px-4 py-3 text-sm text-center">
                       <span className="inline-flex items-center justify-center bg-purple-100 text-purple-800 rounded-full px-2 py-0.5 text-xs">
-                        {alumno.cuatrimestre}
+                        {grupo?.tipo === "autoplaneado"
+                          ? alumno.plan_meses
+                            ? `${alumno.plan_meses} meses`
+                            : "-"
+                          : alumno.cuatrimestre || "-"}
                       </span>
                     </td>
                   </tr>
@@ -188,7 +214,11 @@ export default function MiGrupo() {
                     {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
                   </h3>
                   <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
-                    Cuatrimestre {alumno.cuatrimestre}
+                    {grupo?.tipo === "bachillerato"
+                      ? `Semestre ${alumno.cuatrimestre ?? "-"}`
+                      : grupo?.tipo === "autoplaneado"
+                      ? `Plan ${alumno.plan_meses ? `${alumno.plan_meses} meses` : "-"}`
+                      : `Cuatrimestre ${alumno.cuatrimestre ?? "-"}`}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600"><strong>Correo:</strong> {alumno.correo}</p>

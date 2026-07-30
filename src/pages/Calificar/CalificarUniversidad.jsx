@@ -60,7 +60,7 @@ export default function CalificarUniversidad() {
       supabase.from("vista_grupos_resumen").select("*").eq("id_grupo", id_grupo).single(),
       supabase
         .from("grupo_alumnos")
-        .select("alumnos(id, nombre, apellido_paterno, apellido_materno, correo, foto_url)")
+        .select("alumnos(id, nombre, apellido_paterno, apellido_materno, correo, foto_url, plan_meses)")
         .eq("id_grupo", id_grupo),
     ]);
 
@@ -224,6 +224,11 @@ export default function CalificarUniversidad() {
                                 size={32}
                               />
                               {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
+                              {grupo?.tipo === "autoplaneado" && alumno.plan_meses && (
+                                <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                  Plan {alumno.plan_meses} meses
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="px-4 py-3 text-center">

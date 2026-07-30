@@ -201,17 +201,24 @@ export default function Dashboard() {
                     className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-1 ${
                       grupo.tipo === "bachillerato"
                         ? "bg-red-100 text-red-700"
+                        : grupo.tipo === "autoplaneado"
+                        ? "bg-green-100 text-green-700"
                         : "bg-blue-100 text-blue-700"
                     }`}
                   >
-                    {grupo.tipo === "bachillerato" ? "Bachillerato" : "Universidad"}
+                    {grupo.tipo === "bachillerato"
+                      ? "Bachillerato"
+                      : grupo.tipo === "autoplaneado"
+                      ? "Autoplaneado"
+                      : "Universidad"}
                   </span>
                   <p className="text-gray-600 text-sm font-medium mb-1">
                     {grupo.carrera_nombre || "Sin carrera asignada"}
                   </p>
-                  {grupo.tipo === "bachillerato"
-                    ? grupo.semestre && <p className="text-gray-400 text-xs mb-2">Semestre {grupo.semestre}</p>
-                    : grupo.cuatrimestre && <p className="text-gray-400 text-xs mb-2">Cuatrimestre {grupo.cuatrimestre}</p>}
+                  {grupo.tipo === "bachillerato" &&
+                    grupo.semestre && <p className="text-gray-400 text-xs mb-2">Semestre {grupo.semestre}</p>}
+                  {grupo.tipo === "universidad" &&
+                    grupo.cuatrimestre && <p className="text-gray-400 text-xs mb-2">Cuatrimestre {grupo.cuatrimestre}</p>}
                   <p className="text-gray-500 text-sm flex items-center gap-1.5 mt-2 mb-4">
                     <FontAwesomeIcon icon={faUserGraduate} />
                     {grupo.total_alumnos} alumno{grupo.total_alumnos === 1 ? "" : "s"}
