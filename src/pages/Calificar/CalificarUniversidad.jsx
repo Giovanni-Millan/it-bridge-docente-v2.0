@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../supabaseClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSave, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSave, faTriangleExclamation, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import Avatar from "../../components/Avatar.jsx";
@@ -83,7 +83,7 @@ export default function CalificarUniversidad() {
 
     const { data, error } = await supabase
       .from("calificaciones")
-      .select("correo, calificacion")
+      .select("correo, calificacion, bloqueada")
       .eq("materia", materiaParam)
       .in("correo", correos);
 
@@ -91,7 +91,7 @@ export default function CalificarUniversidad() {
 
     const mapa = {};
     (data || []).forEach((fila) => {
-      mapa[fila.correo] = fila.calificacion;
+      mapa[fila.correo] = { calificacion: fila.calificacion, bloqueada: fila.bloqueada };
     });
     setCalificaciones(mapa);
     setValoresEditables({});
@@ -103,6 +103,7 @@ export default function CalificarUniversidad() {
 
   const handleGuardar = async () => {
     const filas = alumnos
+      .filter((a) => !calificaciones[a.correo]?.bloqueada)
       .filter((a) => valoresEditables[a.id] !== undefined && valoresEditables[a.id] !== "")
       .map((a) => ({
         correo: a.correo,
@@ -112,6 +113,7 @@ export default function CalificarUniversidad() {
         fecha_registro: new Date().toISOString(),
         periodo_cuatrimestre: grupo?.periodo || null,
         ano_cuatrimestre: grupo?.anio || null,
+        bloqueada: true,
       }));
 
     if (filas.length === 0) {
@@ -139,8 +141,9 @@ export default function CalificarUniversidad() {
 
     Swal.fire({
       title: "Calificaciones guardadas",
+      text: "Estas calificaciones quedaron bloqueadas. Si necesitas corregir alguna, pide al administrador que la desbloquee.",
       icon: "success",
-      timer: 1500,
+      timer: 2200,
       showConfirmButton: false,
     });
 
@@ -206,33 +209,53 @@ export default function CalificarUniversidad() {
                       </td>
                     </tr>
                   ) : (
-                    alumnos.map((alumno) => (
-                      <tr key={alumno.id} className="hover:bg-purple-50 transition">
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          <div className="flex items-center gap-3">
-                            <Avatar
-                              fotoUrl={alumno.foto_url}
-                              nombre={alumno.nombre}
-                              apellidoPaterno={alumno.apellido_paterno}
-                              apellidoMaterno={alumno.apellido_materno}
-                              size={32}
-                            />
-                            {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <input
-                            type="number"
-                            min="1"
-                            max="10"
-                            step="0.1"
-                            defaultValue={calificaciones[alumno.correo] ?? ""}
-                            onChange={(e) => handleInputChange(alumno.id, e.target.value)}
-                            className="w-24 text-center border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
-                          />
-                        </td>
-                      </tr>
-                    ))
+                    alumnos.map((alumno) => {
+                      const entrada = calificaciones[alumno.correo];
+                      const bloqueada = !!entrada?.bloqueada;
+                      return (
+                        <tr key={alumno.id} className="hover:bg-purple-50 transition">
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            <div className="flex items-center gap-3">
+                              <Avatar
+                                fotoUrl={alumno.foto_url}
+                                nombre={alumno.nombre}
+                                apellidoPaterno={alumno.apellido_paterno}
+                                apellidoMaterno={alumno.apellido_materno}
+                                size={32}
+                              />
+                              {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {bloqueada ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 font-semibold px-3 py-1.5 rounded-lg">
+                                  <FontAwesomeIcon icon={faLock} className="text-gray-400" />
+                                  {entrada.calificacion}
+                                </span>
+                                <span className="text-[11px] text-gray-400">Bloqueada</span>
+                              </div>
+                            ) : (
+                              <>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="10"
+                                  step="0.1"
+                                  defaultValue={entrada?.calificacion ?? ""}
+                                  onChange={(e) => handleInputChange(alumno.id, e.target.value)}
+                                  className="w-24 text-center border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                                />
+                                <p className="text-[11px] text-green-600 mt-1">
+                                  <FontAwesomeIcon icon={faLockOpen} className="mr-1" />
+                                  Editable
+                                </p>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
