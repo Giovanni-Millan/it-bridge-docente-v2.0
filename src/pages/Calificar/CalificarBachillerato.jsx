@@ -42,14 +42,13 @@ export default function CalificarBachillerato() {
     setUserId(userData.user.id);
 
     // Verificar asignación y obtener la materia si no llegó por navegación directa
-    const { data: asignacion, error: asignacionError } = await supabase
+    const { data: asignaciones, error: asignacionError } = await supabase
       .from("grupo_profesores")
       .select("materia")
       .eq("id_grupo", id_grupo)
-      .eq("id_profesor", userData.user.id)
-      .maybeSingle();
+      .eq("id_profesor", userData.user.id);
 
-    if (asignacionError || !asignacion) {
+    if (asignacionError || !asignaciones || asignaciones.length === 0) {
       Swal.fire({
         icon: "warning",
         title: "Sin acceso",
@@ -59,7 +58,10 @@ export default function CalificarBachillerato() {
       return;
     }
 
-    const materiaFinal = location.state?.materia || asignacion.materia;
+    // Un profesor puede tener varias materias asignadas en el mismo grupo;
+    // se usa la que llegó por navegación (la tarjeta que se abrió) y, si no
+    // llegó ninguna, la primera asignación como respaldo.
+    const materiaFinal = location.state?.materia || asignaciones[0].materia;
     setMateria(materiaFinal);
 
     const [{ data: config }, { data: grupoData }, { data: alumnosData }] = await Promise.all([

@@ -58,9 +58,9 @@ export default function TomarAsistencia() {
       .select("id")
       .eq("id_grupo", id_grupo)
       .eq("id_profesor", userData.user.id)
-      .maybeSingle();
+      .limit(1);
 
-    if (asignacionError || !asignacion) {
+    if (asignacionError || !asignacion || asignacion.length === 0) {
       Swal.fire({
         icon: "warning",
         title: "Sin acceso",
