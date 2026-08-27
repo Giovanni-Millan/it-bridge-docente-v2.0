@@ -87,6 +87,7 @@ export default function CalificarUniversidad() {
       .from("calificaciones")
       .select("correo, calificacion, bloqueada")
       .eq("materia", materiaParam)
+      .eq("id_grupo", id_grupo)
       .in("correo", correos);
 
     if (error) return;
@@ -111,6 +112,7 @@ export default function CalificarUniversidad() {
         correo: a.correo,
         id_alumno: a.id,
         materia,
+        id_grupo: Number(id_grupo),
         calificacion: Number(valoresEditables[a.id]),
         fecha_registro: new Date().toISOString(),
         periodo_cuatrimestre: grupo?.periodo || null,
@@ -132,7 +134,7 @@ export default function CalificarUniversidad() {
     setGuardando(true);
     const { error } = await supabase
       .from("calificaciones")
-      .upsert(filas, { onConflict: "correo,materia" });
+      .upsert(filas, { onConflict: "correo,materia,id_grupo_key" });
     setGuardando(false);
 
     if (error) {
