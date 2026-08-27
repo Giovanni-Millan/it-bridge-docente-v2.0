@@ -138,7 +138,7 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Panel de bienvenida */}
         <div className="bg-white rounded-2xl shadow-lg border border-purple-100 overflow-hidden mb-10">
-          <div className="bg-gradient-to-r from-orange-600 to-orange-400 px-6 py-4">
+          <div className="bg-gradient-to-r from-purple-800 to-purple-600 px-6 py-4">
             <h2 className="text-white text-xl font-semibold flex items-center gap-2">
               <span>👋</span> Panel de Bienvenida
             </h2>
