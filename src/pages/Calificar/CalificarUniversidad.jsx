@@ -201,7 +201,7 @@ export default function CalificarUniversidad() {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Alumno</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider w-40">
-                      Calificación (1-10)
+                      Calificación (0-10)
                     </th>
                   </tr>
                 </thead>
