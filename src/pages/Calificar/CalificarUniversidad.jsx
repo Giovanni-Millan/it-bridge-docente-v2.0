@@ -68,7 +68,15 @@ export default function CalificarUniversidad() {
 
     setCapturaHabilitada(!!config?.captura_calificaciones_habilitada);
     setGrupo(grupoData || null);
-    const roster = (alumnosData || []).map((rel) => rel.alumnos).filter(Boolean);
+    const roster = (alumnosData || [])
+      .map((rel) => rel.alumnos)
+      .filter(Boolean)
+      .sort((a, b) =>
+        `${a.apellido_paterno || ""} ${a.apellido_materno || ""} ${a.nombre || ""}`.localeCompare(
+          `${b.apellido_paterno || ""} ${b.apellido_materno || ""} ${b.nombre || ""}`,
+          "es"
+        )
+      );
     setAlumnos(roster);
 
     await fetchCalificaciones(roster, materiaFinal);

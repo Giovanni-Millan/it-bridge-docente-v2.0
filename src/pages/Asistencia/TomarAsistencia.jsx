@@ -81,7 +81,17 @@ export default function TomarAsistencia() {
     ]);
 
     setGrupo(grupoData || null);
-    setAlumnos((alumnosData || []).map((rel) => rel.alumnos).filter(Boolean));
+    setAlumnos(
+      (alumnosData || [])
+        .map((rel) => rel.alumnos)
+        .filter(Boolean)
+        .sort((a, b) =>
+          `${a.apellido_paterno || ""} ${a.apellido_materno || ""} ${a.nombre || ""}`.localeCompare(
+            `${b.apellido_paterno || ""} ${b.apellido_materno || ""} ${b.nombre || ""}`,
+            "es"
+          )
+        )
+    );
     setAutorizado(true);
     setLoading(false);
   };
