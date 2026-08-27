@@ -143,8 +143,8 @@ export default function Dashboard() {
               <span>👋</span> Panel de Bienvenida
             </h2>
           </div>
-          <div className="p-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="p-6 flex flex-col items-center text-center gap-4 sm:flex-row sm:items-center sm:justify-between sm:text-left">
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4 min-w-0">
               <Avatar
                 fotoUrl={profesor?.foto_url}
                 nombre={profesor?.nombre}
@@ -152,9 +152,9 @@ export default function Dashboard() {
                 apellidoMaterno={profesor?.apellido_materno}
                 size={56}
               />
-              <div>
-                <p className="text-gray-800 text-2xl font-bold">{nombreCompleto || "Profesor(a)"}</p>
-                <p className="text-gray-500 mt-1 flex items-center gap-1">
+              <div className="min-w-0">
+                <p className="text-gray-800 text-xl sm:text-2xl font-bold break-words">{nombreCompleto || "Profesor(a)"}</p>
+                <p className="text-gray-500 mt-1 flex items-center justify-center gap-1 sm:justify-start flex-wrap break-all">
                   <span className="text-sm">📧</span> {correo}
                 </p>
               </div>

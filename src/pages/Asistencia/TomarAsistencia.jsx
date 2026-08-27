@@ -34,6 +34,7 @@ export default function TomarAsistencia() {
   const [guardando, setGuardando] = useState(false);
   const [autorizado, setAutorizado] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [modalAlumno, setModalAlumno] = useState(null); // alumno abierto en el modal de asistencia (solo móvil)
   const fechaInputRef = useRef(null);
 
   useEffect(() => {
@@ -273,7 +274,8 @@ export default function TomarAsistencia() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto relative">
+        {/* Escritorio (sm y arriba): tabla con los 4 botones de estado en línea — sin cambios */}
+        <div className="hidden sm:block bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto relative">
           {cargandoFecha && (
             <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -330,6 +332,104 @@ export default function TomarAsistencia() {
             </tbody>
           </table>
         </div>
+
+        {/* Móvil: lista, toca un alumno para abrir el modal con las 4 opciones */}
+        <div className="sm:hidden bg-white rounded-2xl shadow-md border border-gray-100 relative">
+          {cargandoFecha && (
+            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10 rounded-2xl">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            </div>
+          )}
+          {alumnos.length === 0 ? (
+            <p className="text-center py-8 text-gray-500 italic">Este grupo aún no tiene alumnos asignados.</p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {alumnos.map((alumno) => {
+                const estadoInfo = ESTADOS.find((op) => op.valor === estados[alumno.id]);
+                return (
+                  <button
+                    key={alumno.id}
+                    type="button"
+                    onClick={() => setModalAlumno(alumno)}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-purple-50 transition"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar
+                        fotoUrl={alumno.foto_url}
+                        nombre={alumno.nombre}
+                        apellidoPaterno={alumno.apellido_paterno}
+                        apellidoMaterno={alumno.apellido_materno}
+                        size={32}
+                      />
+                      <span className="text-sm text-gray-900 truncate">
+                        {alumno.nombre} {alumno.apellido_paterno} {alumno.apellido_materno}
+                      </span>
+                    </div>
+                    {estadoInfo ? (
+                      <span
+                        className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${estadoInfo.activo}`}
+                      >
+                        {estadoInfo.etiqueta}
+                      </span>
+                    ) : (
+                      <span className="flex-shrink-0 w-3.5 h-3.5 rounded-full border-2 border-gray-300" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Modal de asistencia — solo se abre desde la lista móvil de arriba */}
+        {modalAlumno && (
+          <div
+            className="sm:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-0"
+            onClick={() => setModalAlumno(null)}
+          >
+            <div
+              className="bg-white rounded-t-2xl w-full max-w-md p-6 pb-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-5">
+                <Avatar
+                  fotoUrl={modalAlumno.foto_url}
+                  nombre={modalAlumno.nombre}
+                  apellidoPaterno={modalAlumno.apellido_paterno}
+                  apellidoMaterno={modalAlumno.apellido_materno}
+                  size={44}
+                />
+                <p className="font-bold text-gray-900">
+                  {modalAlumno.nombre} {modalAlumno.apellido_paterno} {modalAlumno.apellido_materno}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {ESTADOS.map((op) => (
+                  <button
+                    key={op.valor}
+                    type="button"
+                    onClick={() => {
+                      marcarEstado(modalAlumno.id, op.valor);
+                      setModalAlumno(null);
+                    }}
+                    className={`px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-wide transition ${
+                      estados[modalAlumno.id] === op.valor ? op.activo : op.inactivo
+                    }`}
+                  >
+                    {op.etiqueta}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalAlumno(null)}
+                className="mt-5 w-full text-center text-gray-500 text-sm font-medium py-2"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        )}
 
         {alumnos.length > 0 && (
           <div className="flex justify-end mt-6">
