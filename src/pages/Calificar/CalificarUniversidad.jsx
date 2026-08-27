@@ -123,9 +123,9 @@ export default function CalificarUniversidad() {
       return;
     }
 
-    const calificacionesInvalidas = filas.some((f) => Number.isNaN(f.calificacion) || f.calificacion < 1 || f.calificacion > 10);
+    const calificacionesInvalidas = filas.some((f) => Number.isNaN(f.calificacion) || f.calificacion < 0 || f.calificacion > 10);
     if (calificacionesInvalidas) {
-      Swal.fire("Calificación inválida", "Las calificaciones deben ser un número entre 1 y 10.", "warning");
+      Swal.fire("Calificación inválida", "Las calificaciones deben ser un número entre 0 y 10.", "warning");
       return;
     }
 
@@ -246,7 +246,7 @@ export default function CalificarUniversidad() {
                               <>
                                 <input
                                   type="number"
-                                  min="1"
+                                  min="0"
                                   max="10"
                                   step="0.1"
                                   defaultValue={entrada?.calificacion ?? ""}
