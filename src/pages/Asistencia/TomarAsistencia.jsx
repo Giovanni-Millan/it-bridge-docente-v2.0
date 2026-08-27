@@ -273,13 +273,13 @@ export default function TomarAsistencia() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden relative">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto relative">
           {cargandoFecha && (
             <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
             </div>
           )}
-          <table className="w-full table-auto divide-y divide-gray-200">
+          <table className="w-full min-w-[560px] table-auto divide-y divide-gray-200">
             <thead className="bg-purple-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Alumno</th>

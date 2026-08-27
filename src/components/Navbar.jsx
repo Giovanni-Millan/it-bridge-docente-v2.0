@@ -9,17 +9,17 @@ import logo from '../assets/logo.png'
 
 export default function Navbar(props) {
   return (
-    <nav className='bg-purple-950 flex justify-between items-center py-3'>
-        <div>
-            <img src={logo} className='logo ml-5 bg-white rounded-full p-1' />
+    <nav className='bg-purple-950 flex justify-between items-center gap-3 py-3 px-3 sm:px-0'>
+        <div className='flex-shrink-0'>
+            <img src={logo} className='logo ml-2 sm:ml-5 bg-white rounded-full p-1' />
         </div>
 
-        <div className='text-white font-thin text-3xl'>
+        <div className='text-white font-thin text-lg sm:text-2xl md:text-3xl text-center truncate'>
             {props.titulo}
         </div>
 
-        <div>
-           
+        <div className='flex-shrink-0 w-8 sm:w-12'>
+
         </div>
     </nav>
   )

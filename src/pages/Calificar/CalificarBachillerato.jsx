@@ -221,8 +221,8 @@ export default function CalificarBachillerato() {
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-              <table className="w-full table-auto divide-y divide-gray-200">
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
+              <table className="w-full min-w-[480px] table-auto divide-y divide-gray-200">
                 <thead className="bg-purple-700">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Alumno</th>
