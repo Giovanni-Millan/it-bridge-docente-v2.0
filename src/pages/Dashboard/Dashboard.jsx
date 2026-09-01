@@ -10,6 +10,7 @@ import {
   faChalkboardTeacher,
   faBookOpen,
   faClipboardCheck,
+  faMagnifyingGlass,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [avisos, setAvisos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [busquedaMateria, setBusquedaMateria] = useState("");
 
   useEffect(() => {
     const init = async () => {
@@ -147,8 +149,16 @@ export default function Dashboard() {
     },
   ];
 
-  const gruposFiltrados =
-    filtroTipo === "todos" ? grupos : grupos.filter((g) => g.tipo === filtroTipo);
+  // El buscador filtra solo por materia (no por nombre de grupo), y aplica
+  // igual sin importar la escolaridad — se combina con el filtro de tipo de
+  // arriba, pero busca sobre universidad, bachillerato y autoplaneado por igual.
+  const gruposFiltrados = grupos
+    .filter((g) => filtroTipo === "todos" || g.tipo === filtroTipo)
+    .filter((g) => {
+      const termino = busquedaMateria.trim().toLowerCase();
+      if (!termino) return true;
+      return (g.materia || "").toLowerCase().includes(termino);
+    });
 
   const nombreCompleto = profesor
     ? `${profesor.nombre} ${profesor.apellido_paterno} ${profesor.apellido_materno || ""}`
@@ -211,18 +221,34 @@ export default function Dashboard() {
           </h3>
 
           {grupos.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {FILTROS_TIPO.map((filtro) => (
-                <button
-                  key={filtro.valor}
-                  onClick={() => setFiltroTipo(filtro.valor)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition ${
-                    filtroTipo === filtro.valor ? filtro.activo : filtro.inactivo
-                  }`}
-                >
-                  {filtro.etiqueta}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <div className="flex flex-wrap gap-2">
+                {FILTROS_TIPO.map((filtro) => (
+                  <button
+                    key={filtro.valor}
+                    onClick={() => setFiltroTipo(filtro.valor)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition ${
+                      filtroTipo === filtro.valor ? filtro.activo : filtro.inactivo
+                    }`}
+                  >
+                    {filtro.etiqueta}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-56">
+                <FontAwesomeIcon
+                  icon={faMagnifyingGlass}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"
+                />
+                <input
+                  type="text"
+                  value={busquedaMateria}
+                  onChange={(e) => setBusquedaMateria(e.target.value)}
+                  placeholder="Buscar materia..."
+                  className="w-full rounded-full border border-purple-200 bg-white py-1.5 pl-9 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                />
+              </div>
             </div>
           )}
 
@@ -232,7 +258,9 @@ export default function Dashboard() {
             </div>
           ) : gruposFiltrados.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-md border border-dashed border-purple-200 p-10 text-center text-gray-500">
-              No tienes grupos de este tipo.
+              {busquedaMateria.trim()
+                ? "No encontramos ninguna materia que coincida con tu búsqueda."
+                : "No tienes grupos de este tipo."}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
