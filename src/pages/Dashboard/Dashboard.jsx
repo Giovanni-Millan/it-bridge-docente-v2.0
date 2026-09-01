@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [grupos, setGrupos] = useState([]);
   const [avisos, setAvisos] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [filtroTipo, setFiltroTipo] = useState("todos");
 
   useEffect(() => {
     const init = async () => {
@@ -116,6 +117,17 @@ export default function Dashboard() {
     window.location.href = "/";
   };
 
+  // Filtros rápidos de "Mis Grupos" por tipo (universidad / bachillerato / autoplaneado)
+  const FILTROS_TIPO = [
+    { valor: "todos", etiqueta: "Todos" },
+    { valor: "universidad", etiqueta: "Universidad" },
+    { valor: "bachillerato", etiqueta: "Bachillerato" },
+    { valor: "autoplaneado", etiqueta: "Autoplaneado" },
+  ];
+
+  const gruposFiltrados =
+    filtroTipo === "todos" ? grupos : grupos.filter((g) => g.tipo === filtroTipo);
+
   const nombreCompleto = profesor
     ? `${profesor.nombre} ${profesor.apellido_paterno} ${profesor.apellido_materno || ""}`
     : "";
@@ -171,18 +183,40 @@ export default function Dashboard() {
 
         {/* Mis grupos */}
         <div className="mb-12">
-          <h3 className="text-2xl font-bold text-purple-900 mb-6 flex items-center gap-2">
+          <h3 className="text-2xl font-bold text-purple-900 mb-4 flex items-center gap-2">
             <FontAwesomeIcon icon={faLayerGroup} className="text-purple-600" />
             Mis Grupos
           </h3>
+
+          {grupos.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {FILTROS_TIPO.map((filtro) => (
+                <button
+                  key={filtro.valor}
+                  onClick={() => setFiltroTipo(filtro.valor)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition ${
+                    filtroTipo === filtro.valor
+                      ? "bg-purple-700 text-white border-purple-700"
+                      : "bg-white text-purple-700 border-purple-200 hover:bg-purple-50"
+                  }`}
+                >
+                  {filtro.etiqueta}
+                </button>
+              ))}
+            </div>
+          )}
 
           {grupos.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-md border border-dashed border-purple-200 p-10 text-center text-gray-500">
               Aún no tienes grupos asignados. Contacta al administrador si crees que esto es un error.
             </div>
+          ) : gruposFiltrados.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-md border border-dashed border-purple-200 p-10 text-center text-gray-500">
+              No tienes grupos de este tipo.
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {grupos.map((grupo) => (
+              {gruposFiltrados.map((grupo) => (
                 <div
                   key={`${grupo.id_grupo}-${grupo.materia}`}
                   className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-purple-100 hover:border-purple-300 flex flex-col items-center text-center"
