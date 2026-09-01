@@ -24,6 +24,7 @@ import MiGrupo from './pages/MiGrupo/MiGrupo'
 import CalificarBachillerato from './pages/Calificar/CalificarBachillerato'
 import CalificarUniversidad from './pages/Calificar/CalificarUniversidad'
 import TomarAsistencia from './pages/Asistencia/TomarAsistencia'
+import WhatsAppFloatingButton from './components/WhatsAppFloatingButton'
 
 
 function App() {
@@ -61,8 +62,10 @@ function App() {
         <Route path='/CGrupoSemestre5' Component={Semestre5}/>
         <Route path='/CGrupoSemestre6' Component={Semestre6}/>
 
-        
+
       </Routes>
+
+      <WhatsAppFloatingButton />
     </Router>
   )
 }
