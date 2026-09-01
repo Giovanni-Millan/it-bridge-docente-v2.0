@@ -117,12 +117,34 @@ export default function Dashboard() {
     window.location.href = "/";
   };
 
-  // Filtros rápidos de "Mis Grupos" por tipo (universidad / bachillerato / autoplaneado)
+  // Filtros rápidos de "Mis Grupos" por tipo (universidad / bachillerato / autoplaneado).
+  // Mismos colores que ya usaban las etiquetas de cada tarjeta de grupo:
+  // universidad=azul, bachillerato=rojo, autoplaneado=verde (ver badge más abajo).
   const FILTROS_TIPO = [
-    { valor: "todos", etiqueta: "Todos" },
-    { valor: "universidad", etiqueta: "Universidad" },
-    { valor: "bachillerato", etiqueta: "Bachillerato" },
-    { valor: "autoplaneado", etiqueta: "Autoplaneado" },
+    {
+      valor: "todos",
+      etiqueta: "Todos",
+      activo: "bg-purple-700 text-white border-purple-700",
+      inactivo: "bg-white text-purple-700 border-purple-200 hover:bg-purple-50",
+    },
+    {
+      valor: "universidad",
+      etiqueta: "Universidad",
+      activo: "bg-blue-700 text-white border-blue-700",
+      inactivo: "bg-white text-blue-700 border-blue-200 hover:bg-blue-50",
+    },
+    {
+      valor: "bachillerato",
+      etiqueta: "Bachillerato",
+      activo: "bg-red-700 text-white border-red-700",
+      inactivo: "bg-white text-red-700 border-red-200 hover:bg-red-50",
+    },
+    {
+      valor: "autoplaneado",
+      etiqueta: "Autoplaneado",
+      activo: "bg-green-700 text-white border-green-700",
+      inactivo: "bg-white text-green-700 border-green-200 hover:bg-green-50",
+    },
   ];
 
   const gruposFiltrados =
@@ -195,9 +217,7 @@ export default function Dashboard() {
                   key={filtro.valor}
                   onClick={() => setFiltroTipo(filtro.valor)}
                   className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition ${
-                    filtroTipo === filtro.valor
-                      ? "bg-purple-700 text-white border-purple-700"
-                      : "bg-white text-purple-700 border-purple-200 hover:bg-purple-50"
+                    filtroTipo === filtro.valor ? filtro.activo : filtro.inactivo
                   }`}
                 >
                   {filtro.etiqueta}
