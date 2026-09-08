@@ -9,6 +9,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import Avatar from "../../components/Avatar.jsx";
+import { mostrarError } from "../../utils/errorTraductor";
 
 const ETIQUETAS_ESTADO = { presente: "Presente", falta: "Falta", retardo: "Retardo", justificado: "Justificado" };
 
@@ -140,8 +141,7 @@ export default function TomarAsistencia() {
     setGuardando(false);
 
     if (error) {
-      console.error(error);
-      Swal.fire("Error", "No se pudo guardar la asistencia. " + error.message, "error");
+      mostrarError(error, "guardar la asistencia");
       return;
     }
 

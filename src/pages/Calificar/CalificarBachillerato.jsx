@@ -6,6 +6,7 @@ import { faArrowLeft, faLock, faSave, faTriangleExclamation } from "@fortawesome
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import Avatar from "../../components/Avatar.jsx";
+import { mostrarError } from "../../utils/errorTraductor";
 
 const PARCIALES = [1, 2, 3];
 
@@ -148,8 +149,7 @@ export default function CalificarBachillerato() {
     setGuardando(false);
 
     if (error) {
-      console.error(error);
-      Swal.fire("Error", "No se pudieron guardar las calificaciones. " + error.message, "error");
+      mostrarError(error, "guardar las calificaciones");
       return;
     }
 
