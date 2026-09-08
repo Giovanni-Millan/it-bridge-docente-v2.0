@@ -3,7 +3,6 @@ import Navbar from "../../components/Navbar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowRightFromBracket,
-  faBell,
   faSpinner,
   faLayerGroup,
   faUserGraduate,
@@ -14,14 +13,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
-import Swal from "sweetalert2";
 import Avatar from "../../components/Avatar.jsx";
 
 export default function Dashboard() {
   const [profesor, setProfesor] = useState(null);
   const [correo, setCorreo] = useState("");
   const [grupos, setGrupos] = useState([]);
-  const [avisos, setAvisos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [busquedaMateria, setBusquedaMateria] = useState("");
@@ -29,7 +26,6 @@ export default function Dashboard() {
   useEffect(() => {
     const init = async () => {
       await fetchUserData();
-      await fetchAvisos();
       setCargando(false);
     };
     init();
@@ -86,32 +82,6 @@ export default function Dashboard() {
     setGrupos(
       gruposData.map((g) => ({ ...g, total_alumnos: conteos[g.id_grupo] || 0 }))
     );
-  };
-
-  const fetchAvisos = async () => {
-    const { data, error } = await supabase
-      .from("avisos")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (!error) setAvisos(data || []);
-  };
-
-  const mostrarAviso = (aviso) => {
-    const fecha = aviso.created_at ? new Date(aviso.created_at).toLocaleString("es-MX") : "Fecha no disponible";
-
-    Swal.fire({
-      title: aviso.titulo,
-      html: `
-        <div style="text-align:left;">
-          <p>${aviso.descripcion}</p>
-          <p style="margin-top:12px; font-size:0.85rem; color:#6b7280;"><strong>Publicado:</strong> ${fecha}</p>
-        </div>
-      `,
-      icon: "info",
-      confirmButtonText: "Entendido",
-      confirmButtonColor: "#7c3aed",
-    });
   };
 
   const handleLogOut = async () => {
@@ -329,34 +299,6 @@ export default function Dashboard() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Avisos */}
-        <div>
-          <h3 className="text-2xl font-bold text-purple-900 mb-6 flex items-center gap-2">
-            <FontAwesomeIcon icon={faBell} className="text-purple-600" />
-            Avisos importantes
-          </h3>
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <div className="p-6">
-              {avisos.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">No hay avisos disponibles en este momento.</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {avisos.map((aviso) => (
-                    <div
-                      key={aviso.id_aviso}
-                      onClick={() => mostrarAviso(aviso)}
-                      className="bg-white border border-purple-200 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-purple-400 hover:bg-purple-50/30"
-                    >
-                      <h4 className="font-bold text-purple-800 text-base line-clamp-1">{aviso.titulo}</h4>
-                      <p className="text-gray-600 text-sm mt-2 line-clamp-3">{aviso.descripcion}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
     </main>

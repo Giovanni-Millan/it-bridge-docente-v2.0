@@ -24,6 +24,7 @@ import MiGrupo from './pages/MiGrupo/MiGrupo'
 import CalificarBachillerato from './pages/Calificar/CalificarBachillerato'
 import CalificarUniversidad from './pages/Calificar/CalificarUniversidad'
 import TomarAsistencia from './pages/Asistencia/TomarAsistencia'
+import PendientesCalificaciones from './pages/PendientesCalificaciones/PendientesCalificaciones'
 import WhatsAppFloatingButton from './components/WhatsAppFloatingButton'
 
 
@@ -43,6 +44,7 @@ function App() {
         <Route path='/Calificar/Bachillerato/:id_grupo' Component={CalificarBachillerato}/>
         <Route path='/Calificar/Universidad/:id_grupo' Component={CalificarUniversidad}/>
         <Route path='/Asistencia/:id_grupo' Component={TomarAsistencia}/>
+        <Route path='/PendientesCalificaciones' Component={PendientesCalificaciones}/>
 
         {/* SUBIR CALIFICACIONES */}
         <Route path='/GrupoSemestre1' Component={Semestre1M}/>
