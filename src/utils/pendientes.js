@@ -66,7 +66,14 @@ export async function calcularPendientesDocente(userId) {
   });
 
   porAsignacion.forEach((asig) => {
-    const alumnosDelGrupo = alumnosPorGrupo.get(asig.id_grupo) || [];
+    // Mismo orden que "Pase de Lista" y "Calificar": apellido paterno,
+    // materno y nombre (no el orden en que llegaron de grupo_alumnos).
+    const alumnosDelGrupo = [...(alumnosPorGrupo.get(asig.id_grupo) || [])].sort((a, b) =>
+      `${a.apellido_paterno || ""} ${a.apellido_materno || ""} ${a.nombre || ""}`.localeCompare(
+        `${b.apellido_paterno || ""} ${b.apellido_materno || ""} ${b.nombre || ""}`,
+        "es"
+      )
+    );
     alumnosDelGrupo.forEach((alumno) => {
       const clave = `${asig.id_grupo}|${asig.materia}|${alumno.id_alumno}`;
       if (capturado.has(clave)) return;

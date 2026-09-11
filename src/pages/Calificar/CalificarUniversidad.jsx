@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../supabaseClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSave, faTriangleExclamation, faLock, faLockOpen } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSave, faTriangleExclamation, faLock, faLockOpen, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import Avatar from "../../components/Avatar.jsx";
@@ -22,6 +22,7 @@ export default function CalificarUniversidad() {
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [autorizado, setAutorizado] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     inicializar();
@@ -162,6 +163,15 @@ export default function CalificarUniversidad() {
     fetchCalificaciones(alumnos, materia);
   };
 
+  // Filtro en vivo por nombre — solo cambia qué se muestra, no toca
+  // `alumnos` (el guardado sigue leyendo de la lista completa).
+  const alumnosFiltrados = alumnos.filter((alumno) => {
+    const term = busqueda.trim().toLowerCase();
+    if (!term) return true;
+    const nombreCompleto = `${alumno.nombre} ${alumno.apellido_paterno} ${alumno.apellido_materno || ""}`.toLowerCase();
+    return nombreCompleto.includes(term);
+  });
+
   if (loading || !autorizado) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -203,6 +213,19 @@ export default function CalificarUniversidad() {
           </div>
         ) : (
           <>
+            {alumnos.length > 0 && (
+              <div className="relative mb-4 max-w-md">
+                <FontAwesomeIcon icon={faMagnifyingGlass} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar alumno por nombre..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+                />
+              </div>
+            )}
+
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-x-auto">
               <table className="w-full min-w-[480px] table-auto divide-y divide-gray-200">
                 <thead className="bg-purple-700">
@@ -220,8 +243,14 @@ export default function CalificarUniversidad() {
                         Este grupo aún no tiene alumnos asignados.
                       </td>
                     </tr>
+                  ) : alumnosFiltrados.length === 0 ? (
+                    <tr>
+                      <td colSpan="2" className="text-center py-8 text-gray-500 italic">
+                        Ningún alumno coincide con "{busqueda}".
+                      </td>
+                    </tr>
                   ) : (
-                    alumnos.map((alumno) => {
+                    alumnosFiltrados.map((alumno) => {
                       const entrada = calificaciones[alumno.correo];
                       const bloqueada = !!entrada?.bloqueada;
                       return (
