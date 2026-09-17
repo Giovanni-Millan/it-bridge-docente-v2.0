@@ -35,6 +35,7 @@ export default function Navbar(props) {
   const [avisos, setAvisos] = useState([]);
   const [noLeidos, setNoLeidos] = useState(0);
   const [pendientesCount, setPendientesCount] = useState(0);
+  const [capturaHabilitada, setCapturaHabilitada] = useState(false);
   const [panelAvisosAbierto, setPanelAvisosAbierto] = useState(false);
 
   useEffect(() => {
@@ -46,13 +47,25 @@ export default function Navbar(props) {
     const userId = userData?.user?.id;
     if (!userId) return;
 
-    const [{ data: avisosData }, pendientesData] = await Promise.all([
+    const [{ data: avisosData }, { data: config }] = await Promise.all([
       supabase.from("avisos").select("*").order("created_at", { ascending: false }),
-      calcularPendientesDocente(userId),
+      supabase.from("configuracion_sistema").select("captura_calificaciones_habilitada").eq("id", 1).single(),
     ]);
 
     setAvisos(avisosData || []);
-    setPendientesCount(pendientesData.reduce((acc, a) => acc + a.alumnos.length, 0));
+
+    // El ícono de pendientes depende por completo del switch global del
+    // admin: si la captura de calificaciones está deshabilitada, no tiene
+    // caso avisarle al docente de huecos que no puede llenar todavía — ni
+    // se calcula el conteo (evita la consulta) ni se muestra el ícono.
+    const habilitada = !!config?.captura_calificaciones_habilitada;
+    setCapturaHabilitada(habilitada);
+    if (habilitada) {
+      const pendientesData = await calcularPendientesDocente(userId);
+      setPendientesCount(pendientesData.reduce((acc, a) => acc + a.alumnos.length, 0));
+    } else {
+      setPendientesCount(0);
+    }
 
     const ultimaVista = localStorage.getItem(CLAVE_ULTIMA_VISTA);
     const noLeidosCalc = (avisosData || []).filter(
@@ -107,20 +120,24 @@ export default function Navbar(props) {
       </div>
 
       <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3 mr-2 sm:mr-5">
-        {/* Ícono de pendientes: solo se muestra el badge si hay algo pendiente,
-            pero el ícono siempre está para que sea un atajo predecible. */}
-        <button
-          onClick={irAPendientes}
-          title="Pendientes de calificaciones"
-          className="relative text-white/80 hover:text-white transition-colors p-2"
-        >
-          <FontAwesomeIcon icon={faClipboardList} className="text-lg sm:text-xl" />
-          {pendientesCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-purple-950">
-              {pendientesCount > 99 ? "99+" : pendientesCount}
-            </span>
-          )}
-        </button>
+        {/* Ícono de pendientes: si el admin no habilitó la captura de
+            calificaciones, no aparece nada (ni el ícono ni el badge) — no
+            tiene caso ofrecer un atajo a una pantalla que redirigiría a
+            capturar algo que todavía no se puede guardar. */}
+        {capturaHabilitada && (
+          <button
+            onClick={irAPendientes}
+            title="Pendientes de calificaciones"
+            className="relative text-white/80 hover:text-white transition-colors p-2"
+          >
+            <FontAwesomeIcon icon={faClipboardList} className="text-lg sm:text-xl" />
+            {pendientesCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-purple-950">
+                {pendientesCount > 99 ? "99+" : pendientesCount}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Campanita de avisos */}
         <div className="relative">

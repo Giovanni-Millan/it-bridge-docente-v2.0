@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { supabase } from "../../supabaseClient";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSave, faCalendarDays, faFilePdf, faFileExcel } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSave, faCalendarDays, faFilePdf, faFileExcel, faTableList } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import jsPDF from "jspdf";
@@ -12,6 +12,48 @@ import Avatar from "../../components/Avatar.jsx";
 import { mostrarError } from "../../utils/errorTraductor";
 
 const ETIQUETAS_ESTADO = { presente: "Presente", falta: "Falta", retardo: "Retardo", justificado: "Justificado" };
+const CODIGOS_ESTADO = { presente: "A", falta: "F", retardo: "R", justificado: "J" };
+
+// Convención de abreviatura de carrera que ya usa la escuela en sus concentrados de Excel
+// (columna "LIC"). Se normaliza sin acentos/mayúsculas y se le quita la modalidad
+// (" - Escolarizado"/"- Sabatino"/"- Dominical") antes de buscarla aquí.
+const ABREVIATURAS_CARRERA = {
+  administracion: "ADM",
+  autoplaneado: "AUT",
+  bachillerato: "BACH",
+  "ciencias del deporte y gestion deportiva": "CDG",
+  contaduria: "CON",
+  criminologia: "CRI",
+  derecho: "DER",
+  "ingenieria en sistemas computacionales": "SIS",
+  "ingenieria industrial": "ING",
+  inicios: "INI",
+  logistica: "LOG",
+  pedagogia: "PED",
+  psicologia: "PSI",
+  psicopedagogia: "PSI-PED",
+  "trabajo social": "TSO",
+};
+
+const normalizarTexto = (texto) =>
+  (texto || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+
+const abreviarCarrera = (carreraNombre) => {
+  if (!carreraNombre) return "";
+  const base = normalizarTexto(carreraNombre.replace(/ - .*$/, ""));
+  return ABREVIATURAS_CARRERA[base] || carreraNombre.slice(0, 3).toUpperCase();
+};
+
+// "2026-09-06" -> "6/sep/2026", igual al formato que ya usan los concentrados de la escuela.
+const MESES_ABREV = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+const fechaComoColumna = (fechaISO) => {
+  const [anio, mes, dia] = fechaISO.split("-");
+  return `${Number(dia)}/${MESES_ABREV[Number(mes) - 1]}/${anio}`;
+};
 
 const ESTADOS = [
   { valor: "presente", etiqueta: "Presente", activo: "bg-green-600 text-white", inactivo: "bg-green-50 text-green-700 hover:bg-green-100" },
@@ -21,6 +63,31 @@ const ESTADOS = [
 ];
 
 const hoyISO = () => new Date().toLocaleDateString("sv-SE"); // YYYY-MM-DD en horario local
+
+// Rango de meses de cada periodo cuatrimestral, para acotar el pase de lista de universidad
+// al periodo real del grupo (MAY-AGO 2026 solo deja mayo-agosto 2026, etc.) y que no se
+// registre asistencia de otros meses por accidente. Bachillerato no usa `periodo`, así que
+// queda sin restricción (mismo comportamiento de siempre).
+const RANGOS_PERIODO = {
+  "ENE-ABR": ["01-01", "04-30"],
+  "MAY-AGO": ["05-01", "08-31"],
+  "SEP-DIC": ["09-01", "12-31"],
+};
+
+const rangoFechasGrupo = (grupo) => {
+  if (!grupo || grupo.tipo !== "universidad" || !grupo.periodo || !grupo.anio) return null;
+  const meses = RANGOS_PERIODO[grupo.periodo];
+  if (!meses) return null;
+  const max = `${grupo.anio}-${meses[1]}`;
+  return { min: `${grupo.anio}-${meses[0]}`, max: max < hoyISO() ? max : hoyISO() };
+};
+
+const acotarFecha = (fecha, rango) => {
+  if (!rango) return fecha;
+  if (fecha < rango.min) return rango.min;
+  if (fecha > rango.max) return rango.max;
+  return fecha;
+};
 
 export default function TomarAsistencia() {
   const { id_grupo } = useParams();
@@ -33,6 +100,7 @@ export default function TomarAsistencia() {
   const [loading, setLoading] = useState(true);
   const [cargandoFecha, setCargandoFecha] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [exportandoConcentrado, setExportandoConcentrado] = useState(false);
   const [autorizado, setAutorizado] = useState(false);
   const [userId, setUserId] = useState(null);
   const [modalAlumno, setModalAlumno] = useState(null); // alumno abierto en el modal de asistencia (solo móvil)
@@ -45,6 +113,13 @@ export default function TomarAsistencia() {
   useEffect(() => {
     if (autorizado) fetchAsistencia(fecha);
   }, [fecha, autorizado]);
+
+  const rango = rangoFechasGrupo(grupo);
+
+  useEffect(() => {
+    if (!rango) return;
+    setFecha((actual) => acotarFecha(actual, rango));
+  }, [grupo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const inicializar = async () => {
     setLoading(true);
@@ -78,7 +153,7 @@ export default function TomarAsistencia() {
       supabase.from("vista_grupos_resumen").select("*").eq("id_grupo", id_grupo).single(),
       supabase
         .from("grupo_alumnos")
-        .select("alumnos(id, nombre, apellido_paterno, apellido_materno, foto_url)")
+        .select("alumnos(id, nombre, apellido_paterno, apellido_materno, foto_url, carrera:id_carrera(nombre))")
         .eq("id_grupo", id_grupo),
     ]);
 
@@ -187,6 +262,59 @@ export default function TomarAsistencia() {
     XLSX.writeFile(workbook, `asistencia_${grupo?.nombre || "grupo"}_${fecha}.xlsx`);
   };
 
+  // Concentrado general del grupo: una columna por cada fecha en la que se tomó asistencia
+  // alguna vez (no solo la fecha seleccionada arriba), con el código de un solo carácter
+  // que ya usa la escuela en sus formatos (A/F/R/J) en vez de la palabra completa.
+  const exportConcentrado = async () => {
+    if (alumnos.length === 0) {
+      Swal.fire("Sin datos", "No hay alumnos para exportar.", "warning");
+      return;
+    }
+
+    setExportandoConcentrado(true);
+    const { data, error } = await supabase
+      .from("asistencias")
+      .select("id_alumno, fecha, estado")
+      .eq("id_grupo", id_grupo);
+    setExportandoConcentrado(false);
+
+    if (error) {
+      mostrarError(error, "exportar el concentrado de asistencia");
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      Swal.fire("Sin registros", "Este grupo todavía no tiene ninguna asistencia registrada.", "info");
+      return;
+    }
+
+    const fechas = [...new Set(data.map((fila) => fila.fecha))].sort();
+    const estadoPorAlumnoFecha = {};
+    data.forEach((fila) => {
+      estadoPorAlumnoFecha[`${fila.id_alumno}|${fila.fecha}`] = fila.estado;
+    });
+
+    const filas = alumnos.map((a) => {
+      const fila = {
+        LIC: abreviarCarrera(a.carrera?.nombre),
+        "Nombre del alumno": `${a.apellido_paterno} ${a.apellido_materno || ""} ${a.nombre}`
+          .replace(/\s+/g, " ")
+          .trim()
+          .toUpperCase(),
+      };
+      fechas.forEach((f) => {
+        const estado = estadoPorAlumnoFecha[`${a.id}|${f}`];
+        fila[fechaComoColumna(f)] = CODIGOS_ESTADO[estado] || "";
+      });
+      return fila;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(filas);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Concentrado");
+    XLSX.writeFile(workbook, `concentrado_asistencia_${grupo?.nombre || "grupo"}.xlsx`);
+  };
+
   const fechaLegible = new Date(fecha + "T00:00:00").toLocaleDateString("es-MX", {
     day: "numeric",
     month: "long",
@@ -244,15 +372,16 @@ export default function TomarAsistencia() {
                 ref={fechaInputRef}
                 type="date"
                 value={fecha}
-                max={hoyISO()}
-                onChange={(e) => setFecha(e.target.value)}
+                min={rango?.min}
+                max={rango?.max ?? hoyISO()}
+                onChange={(e) => setFecha(acotarFecha(e.target.value, rango))}
                 className="sr-only"
                 tabIndex={-1}
               />
             </div>
             <button
               type="button"
-              onClick={() => setFecha(hoyISO())}
+              onClick={() => setFecha(acotarFecha(hoyISO(), rango))}
               className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-600 rounded-xl px-4 py-2.5 shadow-sm hover:bg-gray-50 transition text-sm font-medium"
             >
               Hoy
@@ -270,6 +399,14 @@ export default function TomarAsistencia() {
             >
               <FontAwesomeIcon icon={faFilePdf} />
               PDF
+            </button>
+            <button
+              onClick={exportConcentrado}
+              disabled={exportandoConcentrado}
+              className="inline-flex items-center gap-2 bg-purple-700 hover:bg-purple-800 disabled:opacity-60 text-white font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all"
+            >
+              <FontAwesomeIcon icon={faTableList} />
+              {exportandoConcentrado ? "Generando..." : "Concentrado"}
             </button>
           </div>
         </div>

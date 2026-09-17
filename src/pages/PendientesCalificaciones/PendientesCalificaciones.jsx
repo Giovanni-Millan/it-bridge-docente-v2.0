@@ -39,6 +39,21 @@ export default function PendientesCalificaciones() {
       return;
     }
 
+    // Si el admin apagó la captura de calificaciones, esta pantalla no tiene
+    // nada útil que mostrar (ni el docente puede guardar nada todavía) — se
+    // regresa al Dashboard en vez de dejarlo ver una lista de huecos que no
+    // puede llenar. Mismo switch que ya usan Calificar Universidad/Bachillerato.
+    const { data: config } = await supabase
+      .from("configuracion_sistema")
+      .select("captura_calificaciones_habilitada")
+      .eq("id", 1)
+      .single();
+
+    if (!config?.captura_calificaciones_habilitada) {
+      navigate("/Dashboard");
+      return;
+    }
+
     const datos = await calcularPendientesDocente(userData.user.id);
     setAsignaciones(datos);
     setLoading(false);

@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { PERIODO_ACTUAL } from "./periodoActual";
 
 // Misma lógica de "pendiente" que usa el admin en Pendientes de Calificaciones
 // (bridge-admin-web), pero acotada de entrada a las asignaciones de UN solo
@@ -16,12 +17,22 @@ import { supabase } from "../supabaseClient";
 // cuenta como pendiente. Hoy no hay grupos de bachillerato activos, así que
 // esta simplificación no tiene efecto real todavía.
 export async function calcularPendientesDocente(userId) {
-  const { data: asignaciones, error: errorAsignaciones } = await supabase
+  const { data: asignacionesCrudas, error: errorAsignaciones } = await supabase
     .from("vista_profesor_grupos")
-    .select("id_grupo, grupo_nombre, carrera_nombre, materia, tipo")
+    .select("id_grupo, grupo_nombre, carrera_nombre, materia, tipo, periodo, anio")
     .eq("id_profesor", userId);
 
-  if (errorAsignaciones || !asignaciones || asignaciones.length === 0) return [];
+  if (errorAsignaciones || !asignacionesCrudas || asignacionesCrudas.length === 0) return [];
+
+  // Solo el periodo vigente — un grupo de un periodo ya cerrado (ej. MAY-AGO
+  // 2026 una vez que ya estamos en SEP-DIC) no debe seguir generando
+  // pendientes. Bachillerato no maneja `periodo` (solo año), así que esos
+  // grupos se dejan pasar igual que en el filtro de periodo del Dashboard.
+  const asignaciones = asignacionesCrudas.filter(
+    (a) => !a.periodo || (a.periodo === PERIODO_ACTUAL.periodo && a.anio === PERIODO_ACTUAL.anio)
+  );
+
+  if (asignaciones.length === 0) return [];
 
   const idsGrupos = [...new Set(asignaciones.map((a) => a.id_grupo))];
 

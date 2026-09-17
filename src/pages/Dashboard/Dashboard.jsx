@@ -14,6 +14,7 @@ import {
 import { Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
 import Avatar from "../../components/Avatar.jsx";
+import { PERIODO_ACTUAL } from "../../utils/periodoActual";
 
 export default function Dashboard() {
   const [profesor, setProfesor] = useState(null);
@@ -22,6 +23,8 @@ export default function Dashboard() {
   const [cargando, setCargando] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [busquedaMateria, setBusquedaMateria] = useState("");
+  // Por defecto el docente entra viendo el periodo vigente.
+  const [filtroPeriodo, setFiltroPeriodo] = useState(`${PERIODO_ACTUAL.periodo}-${PERIODO_ACTUAL.anio}`);
 
   useEffect(() => {
     const init = async () => {
@@ -119,10 +122,30 @@ export default function Dashboard() {
     },
   ];
 
+  // Pestañas de periodo (ciclo cuatrimestral). Bachillerato no maneja
+  // periodo (solo semestre/año, ver CrearGrupo.jsx), así que esos grupos
+  // llegan con periodo=null y deben verse en ambas pestañas en vez de
+  // desaparecer.
+  const FILTROS_PERIODO = [
+    { valor: "MAY-AGO-2026", periodo: "MAY-AGO", anio: 2026, etiqueta: "MAY-AGO 2026" },
+    {
+      valor: `${PERIODO_ACTUAL.periodo}-${PERIODO_ACTUAL.anio}`,
+      periodo: PERIODO_ACTUAL.periodo,
+      anio: PERIODO_ACTUAL.anio,
+      etiqueta: `${PERIODO_ACTUAL.periodo} ${PERIODO_ACTUAL.anio}`,
+    },
+  ];
+  const periodoSeleccionado = FILTROS_PERIODO.find((p) => p.valor === filtroPeriodo);
+
   // El buscador filtra solo por materia (no por nombre de grupo), y aplica
   // igual sin importar la escolaridad — se combina con el filtro de tipo de
   // arriba, pero busca sobre universidad, bachillerato y autoplaneado por igual.
   const gruposFiltrados = grupos
+    .filter(
+      (g) =>
+        !g.periodo ||
+        (g.periodo === periodoSeleccionado.periodo && g.anio === periodoSeleccionado.anio)
+    )
     .filter((g) => filtroTipo === "todos" || g.tipo === filtroTipo)
     .filter((g) => {
       const termino = busquedaMateria.trim().toLowerCase();
@@ -192,6 +215,22 @@ export default function Dashboard() {
 
           {grupos.length > 0 && (
             <div className="flex flex-wrap items-center gap-3 mb-6">
+              <div className="flex flex-wrap gap-2 pr-3 border-r border-purple-100">
+                {FILTROS_PERIODO.map((periodo) => (
+                  <button
+                    key={periodo.valor}
+                    onClick={() => setFiltroPeriodo(periodo.valor)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition ${
+                      filtroPeriodo === periodo.valor
+                        ? "bg-indigo-700 text-white border-indigo-700"
+                        : "bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+                    }`}
+                  >
+                    {periodo.etiqueta}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex flex-wrap gap-2">
                 {FILTROS_TIPO.map((filtro) => (
                   <button
@@ -230,7 +269,7 @@ export default function Dashboard() {
             <div className="bg-white rounded-2xl shadow-md border border-dashed border-purple-200 p-10 text-center text-gray-500">
               {busquedaMateria.trim()
                 ? "No encontramos ninguna materia que coincida con tu búsqueda."
-                : "No tienes grupos de este tipo."}
+                : `No tienes grupos de este tipo en el periodo ${periodoSeleccionado.etiqueta}.`}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
