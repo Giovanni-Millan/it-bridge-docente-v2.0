@@ -116,6 +116,8 @@ export default function MiGrupo() {
                     ? "bg-red-100 text-red-700"
                     : grupo.tipo === "autoplaneado"
                     ? "bg-green-100 text-green-700"
+                    : grupo.tipo === "secundaria"
+                    ? "bg-teal-100 text-teal-700"
                     : "bg-blue-100 text-blue-700"
                 }`}
               >
@@ -123,6 +125,8 @@ export default function MiGrupo() {
                   ? "Bachillerato"
                   : grupo.tipo === "autoplaneado"
                   ? "Autoplaneado"
+                  : grupo.tipo === "secundaria"
+                  ? "Secundaria"
                   : "Universidad"}
               </span>
             </div>
@@ -130,8 +134,10 @@ export default function MiGrupo() {
             {grupo.tipo === "universidad" && grupo.cuatrimestre && (
               <p className="text-sm text-gray-500 mt-1">Cuatrimestre {grupo.cuatrimestre}</p>
             )}
-            {grupo.tipo === "bachillerato" && grupo.semestre && (
-              <p className="text-sm text-gray-500 mt-1">Semestre {grupo.semestre}</p>
+            {(grupo.tipo === "bachillerato" || grupo.tipo === "secundaria") && grupo.semestre && (
+              <p className="text-sm text-gray-500 mt-1">
+                {grupo.tipo === "secundaria" ? "Grado" : "Semestre"} {grupo.semestre}
+              </p>
             )}
           </div>
         )}
@@ -165,7 +171,13 @@ export default function MiGrupo() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Correo</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">Teléfono</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
-                  {grupo?.tipo === "bachillerato" ? "Semestre" : grupo?.tipo === "autoplaneado" ? "Plan" : "Cuatrimestre"}
+                  {grupo?.tipo === "bachillerato"
+                    ? "Semestre"
+                    : grupo?.tipo === "secundaria"
+                    ? "Grado"
+                    : grupo?.tipo === "autoplaneado"
+                    ? "Plan"
+                    : "Cuatrimestre"}
                 </th>
               </tr>
             </thead>
@@ -216,6 +228,8 @@ export default function MiGrupo() {
                   <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
                     {grupo?.tipo === "bachillerato"
                       ? `Semestre ${alumno.cuatrimestre ?? "-"}`
+                      : grupo?.tipo === "secundaria"
+                      ? `Grado ${alumno.cuatrimestre ?? "-"}`
                       : grupo?.tipo === "autoplaneado"
                       ? `Plan ${alumno.plan_meses ? `${alumno.plan_meses} meses` : "-"}`
                       : `Cuatrimestre ${alumno.cuatrimestre ?? "-"}`}

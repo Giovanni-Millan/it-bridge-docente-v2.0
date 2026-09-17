@@ -120,6 +120,12 @@ export default function Dashboard() {
       activo: "bg-green-700 text-white border-green-700",
       inactivo: "bg-white text-green-700 border-green-200 hover:bg-green-50",
     },
+    {
+      valor: "secundaria",
+      etiqueta: "Secundaria",
+      activo: "bg-teal-700 text-white border-teal-700",
+      inactivo: "bg-white text-teal-700 border-teal-200 hover:bg-teal-50",
+    },
   ];
 
   // Pestañas de periodo (ciclo cuatrimestral). Bachillerato no maneja
@@ -294,6 +300,8 @@ export default function Dashboard() {
                         ? "bg-red-100 text-red-700"
                         : grupo.tipo === "autoplaneado"
                         ? "bg-green-100 text-green-700"
+                        : grupo.tipo === "secundaria"
+                        ? "bg-teal-100 text-teal-700"
                         : "bg-blue-100 text-blue-700"
                     }`}
                   >
@@ -301,13 +309,19 @@ export default function Dashboard() {
                       ? "Bachillerato"
                       : grupo.tipo === "autoplaneado"
                       ? "Autoplaneado"
+                      : grupo.tipo === "secundaria"
+                      ? "Secundaria"
                       : "Universidad"}
                   </span>
                   <p className="text-gray-600 text-sm font-medium mb-1">
                     {grupo.carrera_nombre || "Sin carrera asignada"}
                   </p>
-                  {grupo.tipo === "bachillerato" &&
-                    grupo.semestre && <p className="text-gray-400 text-xs mb-2">Semestre {grupo.semestre}</p>}
+                  {(grupo.tipo === "bachillerato" || grupo.tipo === "secundaria") &&
+                    grupo.semestre && (
+                      <p className="text-gray-400 text-xs mb-2">
+                        {grupo.tipo === "secundaria" ? "Grado" : "Semestre"} {grupo.semestre}
+                      </p>
+                    )}
                   {grupo.tipo === "universidad" &&
                     grupo.cuatrimestre && <p className="text-gray-400 text-xs mb-2">Cuatrimestre {grupo.cuatrimestre}</p>}
                   <p className="text-gray-500 text-sm flex items-center gap-1.5 mt-2 mb-4">
@@ -326,6 +340,8 @@ export default function Dashboard() {
                       to={
                         grupo.tipo === "bachillerato"
                           ? `/Calificar/Bachillerato/${grupo.id_grupo}`
+                          : grupo.tipo === "secundaria"
+                          ? `/Calificar/Secundaria/${grupo.id_grupo}`
                           : `/Calificar/Universidad/${grupo.id_grupo}`
                       }
                       state={{ materia: grupo.materia }}

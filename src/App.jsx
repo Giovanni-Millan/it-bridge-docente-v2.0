@@ -42,6 +42,7 @@ function App() {
         {/* COMPLEMENTO: MIS GRUPOS ASIGNADOS (visible desde el Dashboard) */}
         <Route path='/MiGrupo/:id_grupo' Component={MiGrupo}/>
         <Route path='/Calificar/Bachillerato/:id_grupo' Component={CalificarBachillerato}/>
+        <Route path='/Calificar/Secundaria/:id_grupo' Component={CalificarBachillerato}/>
         <Route path='/Calificar/Universidad/:id_grupo' Component={CalificarUniversidad}/>
         <Route path='/Asistencia/:id_grupo' Component={TomarAsistencia}/>
         <Route path='/PendientesCalificaciones' Component={PendientesCalificaciones}/>

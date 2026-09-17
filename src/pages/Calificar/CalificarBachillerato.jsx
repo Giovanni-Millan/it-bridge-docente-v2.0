@@ -201,7 +201,11 @@ export default function CalificarBachillerato() {
           <div className="bg-white rounded-2xl shadow-md p-6 mb-6 border border-gray-100">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{grupo.nombre}</h1>
             <p className="text-purple-700 font-medium mt-1">{materia}</p>
-            {grupo.semestre && <p className="text-sm text-gray-500 mt-1">Semestre {grupo.semestre}</p>}
+            {grupo.semestre && (
+              <p className="text-sm text-gray-500 mt-1">
+                {grupo.tipo === "secundaria" ? "Grado" : "Semestre"} {grupo.semestre}
+              </p>
+            )}
           </div>
         )}
 

@@ -76,7 +76,8 @@ export default function PendientesCalificaciones() {
   // el Dashboard: la pantalla de Calificar recibe la materia por location.state
   // y valida por su cuenta que el grupo sí sea de este profesor.
   const irACapturar = (asig) => {
-    const ruta = asig.tipo === "bachillerato" ? "Bachillerato" : "Universidad";
+    const ruta =
+      asig.tipo === "bachillerato" ? "Bachillerato" : asig.tipo === "secundaria" ? "Secundaria" : "Universidad";
     navigate(`/Calificar/${ruta}/${asig.id_grupo}`, { state: { materia: asig.materia } });
   };
 
