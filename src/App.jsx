@@ -26,6 +26,7 @@ import CalificarUniversidad from './pages/Calificar/CalificarUniversidad'
 import TomarAsistencia from './pages/Asistencia/TomarAsistencia'
 import PendientesCalificaciones from './pages/PendientesCalificaciones/PendientesCalificaciones'
 import WhatsAppFloatingButton from './components/WhatsAppFloatingButton'
+import RutaProtegida from './components/RutaProtegida.jsx'
 
 
 function App() {
@@ -35,6 +36,11 @@ function App() {
     <Router>
       <Routes>
         <Route path='/' Component={Login}/>
+
+        {/* Todo lo de abajo requiere sesión real con rol "docente" — si no,
+            RutaProtegida regresa al Login en vez de dejar montar la pantalla. */}
+        <Route element={<RutaProtegida rol="docente" />}>
+
         <Route path='/Dashboard' Component={Dashboard}/>
         <Route path='/SubirCalificaciones' Component={SubirCalificaciones}/>
         <Route path='/ConsultarGrupos' Component={ConsultarGrupos}/>
@@ -65,6 +71,8 @@ function App() {
         <Route path='/CGrupoSemestre5' Component={Semestre5}/>
         <Route path='/CGrupoSemestre6' Component={Semestre6}/>
 
+        </Route>
+        {/* fin de las rutas protegidas */}
 
       </Routes>
 
