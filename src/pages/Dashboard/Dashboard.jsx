@@ -288,6 +288,11 @@ export default function Dashboard() {
                     <FontAwesomeIcon icon={faChalkboardTeacher} className="text-4xl text-purple-700" />
                   </div>
                   <h4 className="text-lg font-semibold text-gray-800 mb-1">{grupo.grupo_nombre}</h4>
+                  {grupo.sede_nombre && (
+                    <span className="inline-block text-xs font-semibold bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full mb-1">
+                      {grupo.sede_nombre}
+                    </span>
+                  )}
                   {grupo.materia && (
                     <p className="text-purple-700 text-base font-bold flex items-center gap-1.5 mb-2">
                       <FontAwesomeIcon icon={faBookOpen} className="text-purple-400" />

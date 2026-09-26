@@ -129,6 +129,11 @@ export default function MiGrupo() {
                   ? "Secundaria"
                   : "Universidad"}
               </span>
+              {grupo.sede_nombre && (
+                <span className="text-xs font-semibold bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full">
+                  {grupo.sede_nombre}
+                </span>
+              )}
             </div>
             <p className="text-purple-700 font-medium mt-1">{grupo.carrera_nombre || "Sin carrera asignada"}</p>
             {grupo.tipo === "universidad" && grupo.cuatrimestre && (
